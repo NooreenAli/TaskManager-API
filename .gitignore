@@ -361,3 +361,14 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Sensitive environment-specific config - never commit real connection strings
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+
+# Docker
+.dockerignore
+
+# Local Docker overrides containing real secrets
+docker-compose.override.yml

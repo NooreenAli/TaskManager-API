@@ -1,0 +1,47 @@
+services:
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrong!Passw0rd"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourStrong!Passw0rd -Q 'SELECT 1' -No -l 30"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  api:
+    build:
+      context: .
+      dockerfile: src/TaskManager.API/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TaskManagerDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True"
+      ServiceBus__ConnectionString: "replace-with-your-service-bus-connection-string"
+      ServiceBus__QueueName: "task-created"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: src/TaskManager.Worker/Dockerfile
+    environment:
+      DOTNET_ENVIRONMENT: Production
+      ServiceBus__ConnectionString: "replace-with-your-service-bus-connection-string"
+      ServiceBus__QueueName: "task-created"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+volumes:
+  sqlserver-data:
