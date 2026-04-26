@@ -372,3 +372,5 @@ appsettings.Production.json
 
 # Local Docker overrides containing real secrets
 docker-compose.override.yml
+src/TaskManager.API/appsettings.Development.json
+src/TaskManager.Worker/appsettings.Development.json
